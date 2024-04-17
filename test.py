@@ -1,50 +1,33 @@
-def do_create(self, arg):
-    if arg:
-        try:
-            args = arg.split()
-            class_name = args[0]
+#!/usr/bin/python3
+""" Test delete feature
+"""
+from models.engine.file_storage import FileStorage
+from models.state import State
 
-            if class_name in models.classes:
-                template = models.classes[class_name]
-                new_instance = template()
+fs = FileStorage()
 
-                # Iterate through the parameters
-                for param in args[1:]:
-                    key_value = param.split("=")
-                    if len(key_value) != 2:
-                        print("** Invalid parameter format: {} **".format(param))
-                        continue
+# All States
+all_states = fs.all(State)
+print("All States: {}".format(len(all_states.keys())))
+for state_key in all_states.keys():
+    print(all_states[state_key])
 
-                    key = key_value[0]
-                    value = key_value[1]
+# Create a new State
+new_state = State()
+new_state.name = "California"
+fs.new(new_state)
+fs.save()
+print("New State: {}".format(new_state))
 
-                    # Handle different value types according to the specified syntax
-                    if value.startswith('"') and value.endswith('"'):
-                        # String value
-                        value = value[1:-1].replace('\\"', '"').replace('_', ' ')
-                    elif '.' in value:
-                        # Float value
-                        try:
-                            value = float(value)
-                        except ValueError:
-                            print("** Invalid float value for parameter {}: {} **".format(key, value))
-                            continue
-                    else:
-                        # Integer value
-                        try:
-                            value = int(value)
-                        except ValueError:
-                            print("** Invalid integer value for parameter {}: {} **".format(key, value))
-                            continue
+# All States
+all_states = fs.all(State)
+print("All States: {}".format(len(all_states.keys())))
+for state_key in all_states.keys():
+    print(all_states[state_key])
 
-                    # Set the attribute of the new instance
-                    setattr(new_instance, key, value)
-
-                new_instance.save()
-                print(new_instance.id)
-            else:
-                print("** Class doesn't exist **")
-        except Exception as e:
-            print("** Error creating instance: {} **".format(e))
-    else:
-        print("** Class name missing **")
+# Create another State
+another_state = State()
+another_state.name = "Nevada"
+fs.new(another_state)
+fs.save()
+print("Another State: {}".format(another_state))
