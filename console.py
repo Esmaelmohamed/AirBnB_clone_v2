@@ -10,8 +10,7 @@ from models.state import State
 from models.city import City
 from models.amenity import Amenity
 from models.review import Review
-
-
+from models import classes
 class HBNBCommand(cmd.Cmd):
     """ Contains the functionality for the HBNB console"""
 
@@ -113,18 +112,40 @@ class HBNBCommand(cmd.Cmd):
         """ Overrides the emptyline method of CMD """
         pass
 
-    def do_create(self, args):
-        """ Create an object of any class"""
-        if not args:
-            print("** class name missing **")
-            return
-        elif args not in HBNBCommand.classes:
-            print("** class doesn't exist **")
-            return
-        new_instance = HBNBCommand.classes[args]()
-        storage.save()
-        print(new_instance.id)
-        storage.save()
+    def do_create(self, arg):
+        if arg: 
+            try: 
+                args = arg.split()
+                class_name = args[0] 
+                if classmethod in classes.dummy_classes: 
+                    template = classes.dummy_classes["class_name"]
+                    new_instance = template()
+
+                    for param in args[1:]:
+                        key_value = param.split("=")
+                        if len(key_value) != 2:
+                            print("invalid parameter format") 
+                            continue 
+                        key = key_value[0] 
+                        value = key_value[1] 
+
+                        if value.startswitch('"') and value.endswitch('"'):
+                            value = value[1:-1].replace('\\"','"').replace('_',' ')
+                        elif '.' in value:
+                            try:
+                                value = int(value) 
+                            except ValueError:
+                                print("** Invalid integer value for parameter {}: {} **".format(key,value))
+                                continue 
+                            setattr(new_instance,key,value) 
+                        new_instance.save() 
+                        print(new_instance.id) 
+                    else:
+                        print("** Class dosen't exist **") 
+            except Exception as e:
+                print("Error craeting instance: {}**".format(e))
+        else:
+            print("** Class name missing ** ")
 
     def help_create(self):
         """ Help information for the create method """
