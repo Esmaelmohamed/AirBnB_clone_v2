@@ -24,13 +24,12 @@ class FileStorage:
             for key, val in temp.items():
                 temp[key] = val.to_dict()
             json.dump(temp, f)
-    def delete(self,obj):
-        with open(FileStorage.__file_path,'w') as f:
-            temp = {}
-            temp.pop(FileStorage.__objects) 
-            for key,val in temp.items():
-                temp[key] = val.to_dict()
-            json.dump(temp,f) 
+    def delete(self, obj=None):
+        """ Deletes obj from __objects if it exists. If obj is None, does nothing."""
+        if obj:
+            key = "{}.{}".format(type(obj).__name__, obj.id)
+            self.__objects.pop(key, None)
+
             
 
     def reload(self):
