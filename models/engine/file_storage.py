@@ -34,7 +34,14 @@ class FileStorage:
         from models.city import City
         from models.amenity import Amenity
         from models.review import Review
-
+    def delete(self, obj=None):
+        if obj is None:
+            return
+        key = "{}.{}".format(obj.__class__.__name__, obj.id)
+        if key in self.__objects:
+            del self.__objects[key]
+            self.save()
+            
         classes = {
                     'BaseModel': BaseModel, 'User': User, 'Place': Place,
                     'State': State, 'City': City, 'Amenity': Amenity,
