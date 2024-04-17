@@ -1,8 +1,3 @@
-#!/usr/bin/python3
-"""This module defines a class to manage file storage for hbnb clone"""
-import json
-
-
 class FileStorage:
     """This class manages storage of hbnb models in JSON format"""
     __file_path = 'file.json'
@@ -14,16 +9,14 @@ class FileStorage:
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
-        self.all().update({obj.to_dict()['__class__'] + '.' + obj.id: obj})
+        key = "{}.{}".format(obj.__class__.__name__, obj.id)
+        self.__objects[key] = obj
 
     def save(self):
         """Saves storage dictionary to file"""
+        serialized_objs = {key: obj.to_dict() for key, obj in self.__objects.items()}
         with open(FileStorage.__file_path, 'w') as f:
-            temp = {}
-            temp.update(FileStorage.__objects)
-            for key, val in temp.items():
-                temp[key] = val.to_dict()
-            json.dump(temp, f)
+            json.dump(serialized_objs, f)
 
     def reload(self):
         """Loads storage dictionary from file"""
@@ -34,24 +27,27 @@ class FileStorage:
         from models.city import City
         from models.amenity import Amenity
         from models.review import Review
-    def delete(self, obj=None):
-        if obj is None:
-            return
-        key = "{}.{}".format(obj.__class__.__name__, obj.id)
-        if key in self.__objects:
-            del self.__objects[key]
-            self.save()
-            
+
         classes = {
-                    'BaseModel': BaseModel, 'User': User, 'Place': Place,
-                    'State': State, 'City': City, 'Amenity': Amenity,
-                    'Review': Review
-                  }
+            'BaseModel': BaseModel, 'User': User, 'Place': Place,
+            'State': State, 'City': City, 'Amenity': Amenity,
+            'Review': Review
+        }
+
         try:
-            temp = {}
             with open(FileStorage.__file_path, 'r') as f:
-                temp = json.load(f)
-                for key, val in temp.items():
-                        self.all()[key] = classes[val['__class__']](**val)
+                serialized_objs = json.load(f)
+                for key, obj_dict in serialized_objs.items():
+                    cls_name = obj_dict['__class__']
+                    cls = classes.get(cls_name)
+                    if cls:
+                        self.__objects[key] = cls(**obj_dict)
         except FileNotFoundError:
             pass
+
+    def delete(self, obj=None):
+        """Deletes an object from storage"""
+        if obj is not None:
+            key = "{}.{}".format(obj.__class__.__name__, obj.id)
+            self.__objects.pop(key, None)
+            self.save()
